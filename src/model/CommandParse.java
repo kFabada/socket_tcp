@@ -17,10 +17,13 @@ public class CommandParse {
         if(message.startsWith(":")){
             try {
                 clientServerSide.redirectMessage(message);
+                serverWarningMessage = null;
             }catch (RuntimeException e) {
                 serverWarningMessage = ServerWarningMessage.MESSAGE_BLOCK;
             }
-        }else if(message.startsWith("/:") && message.contains("-")){
+        }
+
+        if(message.startsWith("/:") && message.contains("-")){
             String metterCommand = "username";
             char prefix = '-';
             char[] data = message.toCharArray();
@@ -45,6 +48,7 @@ public class CommandParse {
                 serverWarningMessage = ServerWarningMessage.USERNAME_ACCEPT;
             }
         }
+
         return serverWarningMessage;
     }
 }
