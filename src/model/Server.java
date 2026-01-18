@@ -6,15 +6,17 @@ import threads.ClientServerThreadRedirect;
 
 import java.io.DataOutputStream;
 import java.io.IOException;
-import java.io.Serializable;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 public class Server {
     private ServerSocket serverSocket;
     private List<ClientServerSide> socketClientList = new ArrayList<>();
+    private Set<String> listUsername = new HashSet<>();
     private final int port;
     private ServerState serverState = ServerState.CLOSE;
 
@@ -24,6 +26,14 @@ public class Server {
 
     public ServerState getServerState() {
         return serverState;
+    }
+
+    public Set<String> getListUsername() {
+        return listUsername;
+    }
+
+    public void setListUsername(Set<String> listUsername) {
+        this.listUsername = listUsername;
     }
 
     public void setServerState(ServerState serverState) {

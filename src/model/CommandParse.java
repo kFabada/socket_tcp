@@ -24,6 +24,7 @@ public class CommandParse {
         }
 
         if(message.startsWith("/:") && message.contains("-")){
+
             String metterCommand = "username";
             char prefix = '-';
             char[] data = message.toCharArray();
@@ -44,11 +45,16 @@ public class CommandParse {
                     stringBuilder.append(data[i]);
                     i++;
                 }
-                clientServerSide.setUsername(stringBuilder.toString());
-                serverWarningMessage = ServerWarningMessage.USERNAME_ACCEPT;
+
+                if(!clientServerSide.getServer().getListUsername().contains(stringBuilder.toString())){
+                    clientServerSide.setUsername(stringBuilder.toString());
+                    clientServerSide.getServer().getListUsername().add(stringBuilder.toString());
+                    serverWarningMessage = ServerWarningMessage.USERNAME_ACCEPT;
+                }else {
+                    serverWarningMessage = ServerWarningMessage.USERNAME_ALREADY_EXISTS;
+                }
             }
         }
-
         return serverWarningMessage;
     }
 }

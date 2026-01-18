@@ -67,9 +67,12 @@ public class ClientServerSide {
         if (this.username.isEmpty()){
             throw new RuntimeException();
         }
+
+
+
         server.getSocketClientList().forEach(client -> {
             if (client != this) {
-                client.sendMessage(message);
+                client.sendMessage("from: " + username + " -> " + message);
             }
         });
     }
