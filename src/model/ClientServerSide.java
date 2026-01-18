@@ -1,13 +1,18 @@
 package model;
 
+import enums.ServerWarningMessage;
+
 import java.io.*;
 import java.net.Socket;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Scanner;
 
 public class ClientServerSide {
     private Socket socket;
+    private String username;
     private DataInputStream inputStream;
     private DataOutputStream outputStream;
     private Server server;
@@ -15,6 +20,12 @@ public class ClientServerSide {
     public ClientServerSide(Socket socket, Server server) {
         this.socket = socket;
         this.server = server;
+    }
+
+    public ClientServerSide(Socket socket, Server server, String username) {
+        this.socket = socket;
+        this.server = server;
+        this.username = username;
     }
 
     public Socket getSocket() {
@@ -70,6 +81,45 @@ public class ClientServerSide {
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
+        }
+    }
+
+    private void comand(String message){
+        boolean erro = false;
+
+        if(message.startsWith("/:") && message.contains("-")){
+            String metterComand = "username";
+            char prefix = '-';
+            char[] data = message.toCharArray();
+
+            StringBuilder stringBuilder = new StringBuilder();
+
+            char c;
+            int i = 2;
+            while ((c = data[i]) != prefix){
+                stringBuilder.append(c);
+                i++;
+            }
+
+            if(stringBuilder.toString().equals(metterComand)){
+                i++;
+                while (i <= (data.length - 1)){
+                    stringBuilder.delete(0, stringBuilder.length());
+                    stringBuilder.append(data[i]);
+                    i++;
+                }
+                this.username = stringBuilder.toString();
+            }else{
+                erro = true;
+            }
+        }else{
+            erro = true;
+        }
+
+        if(erro){
+            this.server.warningMessage(ServerWarningMessage.INVALID_MESSAGE, this);
+        }else{
+            this.server.warningMessage(ServerWarningMessage.USERNAME_ACCEPT, this);
         }
     }
 }
