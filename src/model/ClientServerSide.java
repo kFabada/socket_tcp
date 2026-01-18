@@ -45,6 +45,14 @@ public class ClientServerSide {
     }
 
 
+    public String getUsername() {
+        return username;
+    }
+
+    public void setUsername(String username) {
+        this.username = username;
+    }
+
     public void sendMessage(String message) {
         try {
             outputStream = new DataOutputStream(socket.getOutputStream());
@@ -55,7 +63,10 @@ public class ClientServerSide {
         }
     }
 
-    public void redirectMessage(String message) {
+    public void redirectMessage(String message) throws RuntimeException{
+        if (this.username.isEmpty()){
+            throw new RuntimeException();
+        }
         server.getSocketClientList().forEach(client -> {
             if (client != this) {
                 client.sendMessage(message);
@@ -77,49 +88,19 @@ public class ClientServerSide {
             try {
                 inputStream = new DataInputStream(socket.getInputStream());
                 String message = inputStream.readUTF();
-                redirectMessage(message);
+                this.command(message);
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
         }
     }
 
-    private void comand(String message){
-        boolean erro = false;
+    private void command(String message){
+        CommandParse commandParse = new CommandParse(message, this);
+        ServerWarningMessage status = commandParse.parse();
 
-        if(message.startsWith("/:") && message.contains("-")){
-            String metterComand = "username";
-            char prefix = '-';
-            char[] data = message.toCharArray();
-
-            StringBuilder stringBuilder = new StringBuilder();
-
-            char c;
-            int i = 2;
-            while ((c = data[i]) != prefix){
-                stringBuilder.append(c);
-                i++;
-            }
-
-            if(stringBuilder.toString().equals(metterComand)){
-                i++;
-                while (i <= (data.length - 1)){
-                    stringBuilder.delete(0, stringBuilder.length());
-                    stringBuilder.append(data[i]);
-                    i++;
-                }
-                this.username = stringBuilder.toString();
-            }else{
-                erro = true;
-            }
-        }else{
-            erro = true;
-        }
-
-        if(erro){
-            this.server.warningMessage(ServerWarningMessage.INVALID_MESSAGE, this);
-        }else{
-            this.server.warningMessage(ServerWarningMessage.USERNAME_ACCEPT, this);
-        }
+        if(status != null){
+            this.server.warningMessage(status, this);
+       }
     }
 }
