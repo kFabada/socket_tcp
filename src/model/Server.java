@@ -1,9 +1,12 @@
 package model;
 
 import enums.ServerState;
+import enums.ServerWarningMessage;
 import threads.ClientServerThreadRedirect;
 
+import java.io.DataOutputStream;
 import java.io.IOException;
+import java.io.Serializable;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.ArrayList;
@@ -57,21 +60,43 @@ public class Server {
     }
 
     public void listenClients() {
-        while (true){
+        while (true) {
             try {
                 Socket client = serverSocket.accept();
-                client.setTcpNoDelay(true);
-                ClientServerSide clientServerSide = new ClientServerSide(client, this);
-
-                socketClientList.add(clientServerSide);
-
-                ClientServerThreadRedirect clientServerThreadRedirect = new ClientServerThreadRedirect(clientServerSide);
-                Thread threadClientServerRedirect = new Thread(clientServerThreadRedirect);
-                threadClientServerRedirect.start();
+                this.registerClient(client);
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
         }
+    }
 
+    private void registerClient(Socket client) {
+        try {
+            client.setTcpNoDelay(true);
+            client.setSoTimeout(1000);
+            ClientServerSide clientServerSide = new ClientServerSide(client, this);
+
+            socketClientList.add(clientServerSide);
+            this.warningMessage(ServerWarningMessage.REGISTER_USERNAME, clientServerSide);
+
+            ClientServerThreadRedirect clientServerThreadRedirect = new ClientServerThreadRedirect(clientServerSide);
+            Thread threadClientServerRedirect = new Thread(clientServerThreadRedirect);
+            threadClientServerRedirect.start();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public void warningMessage(ServerWarningMessage message, ClientServerSide clientServerSide) {
+        DataOutputStream out;
+        Socket client = clientServerSide.getSocket();
+
+        try {
+            out = new DataOutputStream(client.getOutputStream());
+            out.writeUTF(message.getMessage());
+            out.flush();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 }

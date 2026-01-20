@@ -1,13 +1,18 @@
 package model;
 
+import enums.ServerWarningMessage;
+
 import java.io.*;
 import java.net.Socket;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Scanner;
 
 public class ClientServerSide {
     private Socket socket;
+    private String username;
     private DataInputStream inputStream;
     private DataOutputStream outputStream;
     private Server server;
@@ -15,6 +20,12 @@ public class ClientServerSide {
     public ClientServerSide(Socket socket, Server server) {
         this.socket = socket;
         this.server = server;
+    }
+
+    public ClientServerSide(Socket socket, Server server, String username) {
+        this.socket = socket;
+        this.server = server;
+        this.username = username;
     }
 
     public Socket getSocket() {
@@ -34,6 +45,14 @@ public class ClientServerSide {
     }
 
 
+    public String getUsername() {
+        return username;
+    }
+
+    public void setUsername(String username) {
+        this.username = username;
+    }
+
     public void sendMessage(String message) {
         try {
             outputStream = new DataOutputStream(socket.getOutputStream());
@@ -44,7 +63,10 @@ public class ClientServerSide {
         }
     }
 
-    public void redirectMessage(String message) {
+    public void redirectMessage(String message) throws RuntimeException{
+        if (this.username.isEmpty()){
+            throw new RuntimeException();
+        }
         server.getSocketClientList().forEach(client -> {
             if (client != this) {
                 client.sendMessage(message);
@@ -66,10 +88,19 @@ public class ClientServerSide {
             try {
                 inputStream = new DataInputStream(socket.getInputStream());
                 String message = inputStream.readUTF();
-                redirectMessage(message);
+                this.command(message);
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
         }
+    }
+
+    private void command(String message){
+        CommandParse commandParse = new CommandParse(message, this);
+        ServerWarningMessage status = commandParse.parse();
+
+        if(status != null){
+            this.server.warningMessage(status, this);
+       }
     }
 }
