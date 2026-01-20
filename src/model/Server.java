@@ -3,6 +3,7 @@ package model;
 import enums.ServerState;
 import enums.ServerWarningMessage;
 import threads.ClientServerThreadRedirect;
+import threads.ServerThreadWarningMessage;
 
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -83,11 +84,13 @@ public class Server {
     private void registerClient(Socket client) {
         try {
             client.setTcpNoDelay(true);
-            client.setSoTimeout(1000);
             ClientServerSide clientServerSide = new ClientServerSide(client, this);
 
             socketClientList.add(clientServerSide);
-            this.warningMessage(ServerWarningMessage.REGISTER_USERNAME, clientServerSide);
+            ServerThreadWarningMessage warningMessage = new ServerThreadWarningMessage(this, clientServerSide, ServerWarningMessage.REGISTER_USERNAME);
+
+            Thread threadWarningMessage = new Thread(warningMessage);
+            threadWarningMessage.start();
 
             ClientServerThreadRedirect clientServerThreadRedirect = new ClientServerThreadRedirect(clientServerSide);
             Thread threadClientServerRedirect = new Thread(clientServerThreadRedirect);
