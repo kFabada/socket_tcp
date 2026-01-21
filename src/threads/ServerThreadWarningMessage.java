@@ -5,9 +5,10 @@ import model.ClientServerSide;
 import model.Server;
 
 public class ServerThreadWarningMessage implements Runnable{
-    private Server server;
-    private ServerWarningMessage message;
-    private ClientServerSide clientServerSide;
+    private final Server server;
+    private final ServerWarningMessage message;
+    private final ClientServerSide clientServerSide;
+
 
     public ServerThreadWarningMessage(Server server, ClientServerSide clientServerSide, ServerWarningMessage message) {
         this.server = server;

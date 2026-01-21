@@ -1,6 +1,7 @@
 package model;
 
 import enums.ServerWarningMessage;
+import threads.ServerThreadWarningMessage;
 
 import java.io.*;
 import java.net.Socket;
@@ -9,6 +10,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Scanner;
+import java.util.concurrent.Executors;
 
 public class ClientServerSide {
     private Socket socket;
@@ -16,6 +18,7 @@ public class ClientServerSide {
     private DataInputStream inputStream;
     private DataOutputStream outputStream;
     private Server server;
+    private boolean registerUsername = false;
 
     public ClientServerSide(Socket socket, Server server) {
         this.socket = socket;
@@ -26,6 +29,14 @@ public class ClientServerSide {
         this.socket = socket;
         this.server = server;
         this.username = username;
+    }
+
+    public boolean getRegisterUsername() {
+        return registerUsername;
+    }
+
+    public void setRegisterUsername(boolean registerUsername) {
+        this.registerUsername = registerUsername;
     }
 
     public Socket getSocket() {
@@ -69,7 +80,6 @@ public class ClientServerSide {
         }
 
 
-
         server.getSocketClientList().forEach(client -> {
             if (client != this) {
                 client.sendMessage("from: " + username + " -> " + message);
@@ -103,7 +113,12 @@ public class ClientServerSide {
         ServerWarningMessage status = commandParse.parse();
 
         if(status != null){
-            this.server.warningMessage(status, this);
+            if(server.getPoolWarningMessage() == null){
+                server.setPoolWarningMessage(Executors.newCachedThreadPool());
+            }
+
+            ServerThreadWarningMessage threadWarningMessage = new ServerThreadWarningMessage(server, this, status);
+            server.getPoolWarningMessage().execute(threadWarningMessage);
        }
     }
 }

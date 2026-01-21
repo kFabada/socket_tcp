@@ -3,8 +3,8 @@ package model;
 import enums.ServerWarningMessage;
 
 public class CommandParse {
-    private String message;
-    private ClientServerSide clientServerSide;
+    private final String message;
+    private final ClientServerSide clientServerSide;
 
     public CommandParse(String message, ClientServerSide clientServerSide) {
         this.message = message;
@@ -24,7 +24,6 @@ public class CommandParse {
         }
 
         if(message.startsWith("/:") && message.contains("-")){
-
             String metterCommand = "username";
             char prefix = '-';
             char[] data = message.toCharArray();
@@ -40,8 +39,9 @@ public class CommandParse {
 
             if(stringBuilder.toString().equals(metterCommand)){
                 i++;
+                stringBuilder = new StringBuilder();
+
                 while (i <= (data.length - 1)){
-                    stringBuilder.delete(0, stringBuilder.length());
                     stringBuilder.append(data[i]);
                     i++;
                 }
@@ -49,6 +49,7 @@ public class CommandParse {
                 if(!clientServerSide.getServer().getListUsername().contains(stringBuilder.toString())){
                     clientServerSide.setUsername(stringBuilder.toString());
                     clientServerSide.getServer().getListUsername().add(stringBuilder.toString());
+                    clientServerSide.setRegisterUsername(true);
                     serverWarningMessage = ServerWarningMessage.USERNAME_ACCEPT;
                 }else {
                     serverWarningMessage = ServerWarningMessage.USERNAME_ALREADY_EXISTS;

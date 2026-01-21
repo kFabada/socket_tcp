@@ -13,16 +13,28 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 public class Server {
     private ServerSocket serverSocket;
     private List<ClientServerSide> socketClientList = new ArrayList<>();
     private Set<String> listUsername = new HashSet<>();
     private final int port;
+    private ExecutorService poolWarningMessage;
     private ServerState serverState = ServerState.CLOSE;
 
     public Server(int port) {
         this.port = port;
+        this.poolWarningMessage = Executors.newCachedThreadPool();
+    }
+
+    public ExecutorService getPoolWarningMessage() {
+        return poolWarningMessage;
+    }
+
+    public void setPoolWarningMessage(ExecutorService poolWarningMessage) {
+        this.poolWarningMessage = poolWarningMessage;
     }
 
     public ServerState getServerState() {
@@ -89,8 +101,7 @@ public class Server {
             socketClientList.add(clientServerSide);
             ServerThreadWarningMessage warningMessage = new ServerThreadWarningMessage(this, clientServerSide, ServerWarningMessage.REGISTER_USERNAME);
 
-            Thread threadWarningMessage = new Thread(warningMessage);
-            threadWarningMessage.start();
+            poolWarningMessage.execute(warningMessage);
 
             ClientServerThreadRedirect clientServerThreadRedirect = new ClientServerThreadRedirect(clientServerSide);
             Thread threadClientServerRedirect = new Thread(clientServerThreadRedirect);
