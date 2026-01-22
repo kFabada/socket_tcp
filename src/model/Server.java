@@ -97,7 +97,6 @@ public class Server {
         try {
             client.setTcpNoDelay(true);
             ClientServerSide clientServerSide = new ClientServerSide(client, this);
-
             socketClientList.add(clientServerSide);
             ServerThreadWarningMessage warningMessage = new ServerThreadWarningMessage(this, clientServerSide, ServerWarningMessage.REGISTER_USERNAME);
 

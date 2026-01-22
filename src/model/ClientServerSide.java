@@ -70,6 +70,7 @@ public class ClientServerSide {
             outputStream.writeUTF(message);
             outputStream.flush();
         } catch (IOException e) {
+            closeConnect();
             throw new RuntimeException(e);
         }
     }
@@ -103,8 +104,26 @@ public class ClientServerSide {
                 String message = inputStream.readUTF();
                 this.command(message);
             } catch (IOException e) {
+                closeConnect();
                 throw new RuntimeException(e);
             }
+        }
+    }
+
+    private void closeConnect(){
+        try{
+            if(inputStream != null){
+                inputStream.close();
+            }
+
+            if(outputStream != null){
+                outputStream.close();
+            }
+
+            server.getSocketClientList().remove(this);
+            System.out.println("close socket: " + "ip: " + socket.getLocalAddress().getHostAddress() + "port: " + socket.getPort() );
+        } catch (IOException e) {
+            throw new RuntimeException(e);
         }
     }
 
