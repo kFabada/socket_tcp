@@ -3,21 +3,19 @@ package model;
 import enums.ServerWarningMessage;
 
 public class CommandParse {
-    private final String message;
     private final ClientServerSide clientServerSide;
 
-    public CommandParse(String message, ClientServerSide clientServerSide) {
-        this.message = message;
+    public CommandParse(ClientServerSide clientServerSide) {
         this.clientServerSide = clientServerSide;
     }
 
-    public ServerWarningMessage parse(){
+    public ServerWarningMessage parse(String message){
         ServerWarningMessage serverWarningMessage = ServerWarningMessage.INVALID_MESSAGE;
 
         if(message.startsWith(":")){
             try {
                 clientServerSide.redirectMessage(message);
-                serverWarningMessage = null;
+                return null;
             }catch (RuntimeException e) {
                 serverWarningMessage = ServerWarningMessage.MESSAGE_BLOCK;
             }
