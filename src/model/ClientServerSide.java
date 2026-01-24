@@ -89,15 +89,6 @@ public class ClientServerSide {
         });
     }
 
-    public String messageFormat(byte[] message) {
-        StringBuilder builder = new StringBuilder();
-
-        for (int i = 0; i <= message.length - 1; i++) {
-            builder.append(message[i]);
-        }
-        return builder.toString();
-    }
-
     public void receiveMessage() {
         while (true) {
             try {
@@ -111,13 +102,14 @@ public class ClientServerSide {
         }
     }
 
-    private void closeConnect(){
+    public void closeConnect(){
         try{
             if(inputStream != null) inputStream.close();
             if(outputStream != null)  outputStream.close();
 
             server.getSocketClientList().remove(this);
-            System.out.println("close socket: " + "ip: " + socket.getLocalAddress().getHostAddress() + "port: " + socket.getPort());
+            System.out.println("close socket from " + username + " ip: " + socket.getLocalAddress().getHostAddress() + "port: " + socket.getPort());
+            server.getListUsername().remove(username);
 
             if(socket != null) socket.close();
         } catch (IOException e) {
@@ -141,5 +133,12 @@ public class ClientServerSide {
             ServerThreadWarningMessage threadWarningMessage = new ServerThreadWarningMessage(server, this, status);
             server.getPoolWarningMessage().execute(threadWarningMessage);
        }
+    }
+
+    public String listUsers(){
+      return server.getListUsername().stream().reduce("", (accumulator, element) -> {
+            if(element.equals(username)) return "";
+            return accumulator + "\n" + element;
+        });
     }
 }
