@@ -1,6 +1,7 @@
 package model;
 
 import enums.ServerWarningMessage;
+import enums.factory.ServerWaningMessageFactory;
 
 public class CommandParse {
     private final ClientServerSide clientServerSide;
@@ -19,6 +20,16 @@ public class CommandParse {
             }catch (RuntimeException e) {
                 serverWarningMessage = ServerWarningMessage.MESSAGE_BLOCK;
             }
+        }
+
+        if(message.startsWith("/:close")){
+            clientServerSide.closeConnect();
+            return null;
+        }
+
+        if(message.startsWith("/:list")){
+            String users = clientServerSide.listUsers();
+            return new ServerWaningMessageFactory(users).warningMessageFactory();
         }
 
         if(message.startsWith("/:") && message.contains("-")){

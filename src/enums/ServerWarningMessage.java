@@ -5,9 +5,10 @@ public enum ServerWarningMessage {
     INVALID_MESSAGE("SERVER MESSAGE: INVALID COMMAND"),
     USERNAME_ACCEPT("SERVER MESSAGE: REGISTER USERNAME ACCEPT"),
     USERNAME_ALREADY_EXISTS("SERVER MESSAGE: USERNAME ALREADY EXISTS"),
-    MESSAGE_BLOCK("SERVER MESSAGE: USERNAME DON'T REGISTER");
+    MESSAGE_BLOCK("SERVER MESSAGE: USERNAME DON'T REGISTER"),
+    USER_LIST("");
 
-    private final String message;
+    private String message;
 
     ServerWarningMessage(String message){
         this.message = message;
@@ -15,5 +16,10 @@ public enum ServerWarningMessage {
 
     public String getMessage(){
         return message;
+    }
+
+    public ServerWarningMessage setMessage(String message){
+        this.message = message;
+        return this;
     }
 }
