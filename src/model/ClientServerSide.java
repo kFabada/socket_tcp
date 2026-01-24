@@ -83,7 +83,7 @@ public class ClientServerSide {
 
         server.getSocketClientList().forEach(client -> {
             if (client != this) {
-                client.sendMessage("from: " + username + " -> " + message);
+                client.sendMessage("from: " + username + " message: " + message.replaceFirst(":", ""));
             }
         });
     }
@@ -112,16 +112,13 @@ public class ClientServerSide {
 
     private void closeConnect(){
         try{
-            if(inputStream != null){
-                inputStream.close();
-            }
-
-            if(outputStream != null){
-                outputStream.close();
-            }
+            if(inputStream != null) inputStream.close();
+            if(outputStream != null)  outputStream.close();
 
             server.getSocketClientList().remove(this);
-            System.out.println("close socket: " + "ip: " + socket.getLocalAddress().getHostAddress() + "port: " + socket.getPort() );
+            System.out.println("close socket: " + "ip: " + socket.getLocalAddress().getHostAddress() + "port: " + socket.getPort());
+
+            if(socket != null) socket.close();
         } catch (IOException e) {
             throw new RuntimeException(e);
         }

@@ -26,7 +26,7 @@ public class Server {
 
     public Server(int port) {
         this.port = port;
-        this.poolWarningMessage = Executors.newCachedThreadPool();
+        this.poolWarningMessage = Executors.newFixedThreadPool(5);
     }
 
     public ExecutorService getPoolWarningMessage() {
