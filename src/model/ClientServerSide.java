@@ -19,6 +19,7 @@ public class ClientServerSide {
     private DataOutputStream outputStream;
     private Server server;
     private boolean registerUsername = false;
+    private CommandParse commandParse;
 
     public ClientServerSide(Socket socket, Server server) {
         this.socket = socket;
@@ -125,8 +126,12 @@ public class ClientServerSide {
     }
 
     private void command(String message){
-        CommandParse commandParse = new CommandParse(message, this);
-        ServerWarningMessage status = commandParse.parse();
+
+        if(commandParse == null){
+            commandParse = new CommandParse(this);
+        }
+
+        ServerWarningMessage status = commandParse.parse(message);
 
         if(status != null){
             if(server.getPoolWarningMessage() == null){
