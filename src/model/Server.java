@@ -3,6 +3,7 @@ package model;
 import enums.ServerState;
 import enums.ServerWarningMessage;
 import threads.ClientServerThreadRedirect;
+import threads.ServerThreadRegisterClient;
 import threads.ServerThreadWarningMessage;
 
 import java.io.DataOutputStream;
@@ -15,6 +16,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 public class Server {
     private ServerSocket serverSocket;
@@ -22,11 +24,23 @@ public class Server {
     private Set<String> listUsername = new HashSet<>();
     private final int port;
     private ExecutorService poolWarningMessage;
+    private ExecutorService poolGenericContex;
     private ServerState serverState = ServerState.CLOSE;
 
     public Server(int port) {
         this.port = port;
-        this.poolWarningMessage = Executors.newFixedThreadPool(5);
+        this.poolGenericContex = Executors.newFixedThreadPool(5);
+        this.poolWarningMessage = Executors.newFixedThreadPool(3);
+        setLimit();
+    }
+
+    private void setLimit(){
+        try {
+            poolGenericContex.awaitTermination(100, TimeUnit.MILLISECONDS);
+            poolWarningMessage.awaitTermination(100, TimeUnit.MILLISECONDS);
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     public ExecutorService getPoolWarningMessage() {
@@ -86,14 +100,14 @@ public class Server {
         while (true) {
             try {
                 Socket client = serverSocket.accept();
-                this.registerClient(client);
+                poolGenericContex.execute(new ServerThreadRegisterClient(this, client));
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
         }
     }
 
-    private void registerClient(Socket client) {
+    public void registerClient(Socket client) {
         try {
             client.setTcpNoDelay(true);
             ClientServerSide clientServerSide = new ClientServerSide(client, this);

@@ -72,7 +72,6 @@ public class ClientServerSide {
             outputStream.flush();
         } catch (IOException e) {
             closeConnect();
-            throw new RuntimeException(e);
         }
     }
 
@@ -90,14 +89,15 @@ public class ClientServerSide {
     }
 
     public void receiveMessage() {
-        while (true) {
+        boolean run = true;
+        while (run) {
             try {
                 inputStream = new DataInputStream(socket.getInputStream());
                 String message = inputStream.readUTF();
                 this.command(message);
             } catch (IOException e) {
                 closeConnect();
-                throw new RuntimeException(e);
+                run = false;
             }
         }
     }
@@ -108,8 +108,12 @@ public class ClientServerSide {
             if(outputStream != null)  outputStream.close();
 
             server.getSocketClientList().remove(this);
-            System.out.println("close socket from " + username + " ip: " + socket.getLocalAddress().getHostAddress() + "port: " + socket.getPort());
-            server.getListUsername().remove(username);
+
+            System.out.println("close socket from " + username + " ip: " + socket.getLocalAddress().getHostAddress() + " port: " + socket.getPort());
+
+            if(username != null){
+                server.getListUsername().remove(username);
+            }
 
             if(socket != null) socket.close();
         } catch (IOException e) {
