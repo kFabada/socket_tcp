@@ -44,12 +44,25 @@ public class Client {
                 if(!message.isBlank()){
                     outputStream.writeUTF(message);
                     outputStream.flush();
+
+                    if(message.startsWith("/:close")){
+                        closeConnection();
+                    }
                 }
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
         }
+    }
 
+    public void closeConnection(){
+        try{
+            if(inputStream != null) inputStream.close();
+            if(outputStream != null)  outputStream.close();
+            if (socket != null) socket.close();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
 
     }
 
