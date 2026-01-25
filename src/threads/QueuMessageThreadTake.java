@@ -2,7 +2,7 @@ package threads;
 
 import model.QueuMessage;
 
-public class QueuMessageThreadTake implements Runnable{
+public final class QueuMessageThreadTake implements Runnable{
     private final QueuMessage queuMessage;
 
     public QueuMessageThreadTake(QueuMessage queuMessage) {

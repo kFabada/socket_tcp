@@ -6,6 +6,7 @@ import threads.ServerThreadWarningMessage;
 
 import java.io.*;
 import java.net.Socket;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 public class ClientServerSide {
@@ -17,6 +18,7 @@ public class ClientServerSide {
     private boolean registerUsername = false;
     private CommandParse commandParse;
     private QueuMessage queuMessage;
+    private ExecutorService poolContext;
 
     public ClientServerSide(Socket socket, Server server) {
         this.socket = socket;
@@ -33,6 +35,13 @@ public class ClientServerSide {
         this.socket = socket;
         this.server = server;
         this.username = username;
+    }
+
+    public ClientServerSide(Socket socket, Server server, QueuMessage queuMessage,  ExecutorService poolContext) {
+        this.socket = socket;
+        this.server = server;
+        this.poolContext = poolContext;
+        this.queuMessage = queuMessage;
     }
 
     public boolean getRegisterUsername() {
@@ -78,20 +87,29 @@ public class ClientServerSide {
         }
     }
 
+    public void queuAddChoose(QueuMessageThreadAdd queueAdd){
+        if(poolContext != null){
+            poolContext.execute(queueAdd);
+        }else{
+            new Thread(queueAdd).start();
+        }
+    }
+
     public void redirectMessage(String message) throws RuntimeException{
+        String messageFormat = "from: " + username + " message: " + message.replaceFirst(":", "");
+
         if (this.username.isEmpty()){
             throw new RuntimeException();
         }
 
-
         server.getSocketClientList().forEach(client -> {
             if(queuMessage != null){
                 if (client != this) {
-                    new Thread(new QueuMessageThreadAdd(queuMessage, new ClientServerSideQueu(client, message))).start();
+                    queuAddChoose(new QueuMessageThreadAdd(queuMessage, new ClientServerSideQueu(client, messageFormat)));
                 }
             }else{
                 if (client != this) {
-                    client.sendMessage("from: " + username + " message: " + message.replaceFirst(":", ""));
+                    client.sendMessage(messageFormat);
                 }
             }
         });

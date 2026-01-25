@@ -118,7 +118,7 @@ public class Server {
     public void registerClient(Socket client) {
         try {
             client.setTcpNoDelay(true);
-            ClientServerSide clientServerSide = new ClientServerSide(client, this, queuMessage);
+            ClientServerSide clientServerSide = new ClientServerSide(client, this, queuMessage, poolGenericContex);
             socketClientList.add(clientServerSide);
             ServerThreadWarningMessage warningMessage = new ServerThreadWarningMessage(this, clientServerSide, ServerWarningMessage.REGISTER_USERNAME);
 
