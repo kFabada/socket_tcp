@@ -1,15 +1,11 @@
 package model;
 
 import enums.ServerWarningMessage;
+import threads.QueuMessageThreadAdd;
 import threads.ServerThreadWarningMessage;
 
 import java.io.*;
 import java.net.Socket;
-import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Scanner;
 import java.util.concurrent.Executors;
 
 public class ClientServerSide {
@@ -20,10 +16,17 @@ public class ClientServerSide {
     private Server server;
     private boolean registerUsername = false;
     private CommandParse commandParse;
+    private QueuMessage queuMessage;
 
     public ClientServerSide(Socket socket, Server server) {
         this.socket = socket;
         this.server = server;
+    }
+
+    public ClientServerSide(Socket socket, Server server, QueuMessage queuMessage) {
+        this.socket = socket;
+        this.server = server;
+        this.queuMessage = queuMessage;
     }
 
     public ClientServerSide(Socket socket, Server server, String username) {
@@ -82,22 +85,27 @@ public class ClientServerSide {
 
 
         server.getSocketClientList().forEach(client -> {
-            if (client != this) {
-                client.sendMessage("from: " + username + " message: " + message.replaceFirst(":", ""));
+            if(queuMessage != null){
+                if (client != this) {
+                    new Thread(new QueuMessageThreadAdd(queuMessage, new ClientServerSideQueu(client, message))).start();
+                }
+            }else{
+                if (client != this) {
+                    client.sendMessage("from: " + username + " message: " + message.replaceFirst(":", ""));
+                }
             }
         });
     }
 
     public void receiveMessage() {
-        boolean run = true;
-        while (run) {
+        while (true) {
             try {
                 inputStream = new DataInputStream(socket.getInputStream());
                 String message = inputStream.readUTF();
                 this.command(message);
             } catch (IOException e) {
                 closeConnect();
-                run = false;
+                break;
             }
         }
     }

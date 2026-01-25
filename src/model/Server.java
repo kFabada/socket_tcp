@@ -3,6 +3,7 @@ package model;
 import enums.ServerState;
 import enums.ServerWarningMessage;
 import threads.ClientServerThreadRedirect;
+import threads.QueuMessageThreadTake;
 import threads.ServerThreadRegisterClient;
 import threads.ServerThreadWarningMessage;
 
@@ -26,12 +27,19 @@ public class Server {
     private ExecutorService poolWarningMessage;
     private ExecutorService poolGenericContex;
     private ServerState serverState = ServerState.CLOSE;
+    private QueuMessage queuMessage = new QueuMessage();
 
     public Server(int port) {
         this.port = port;
         this.poolGenericContex = Executors.newFixedThreadPool(5);
         this.poolWarningMessage = Executors.newFixedThreadPool(3);
         setLimit();
+        startQueu();
+    }
+
+    private void startQueu(){
+       Thread th = new Thread(new QueuMessageThreadTake(queuMessage));
+       th.start();
     }
 
     private void setLimit(){
@@ -110,7 +118,7 @@ public class Server {
     public void registerClient(Socket client) {
         try {
             client.setTcpNoDelay(true);
-            ClientServerSide clientServerSide = new ClientServerSide(client, this);
+            ClientServerSide clientServerSide = new ClientServerSide(client, this, queuMessage);
             socketClientList.add(clientServerSide);
             ServerThreadWarningMessage warningMessage = new ServerThreadWarningMessage(this, clientServerSide, ServerWarningMessage.REGISTER_USERNAME);
 

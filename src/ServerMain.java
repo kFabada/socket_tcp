@@ -1,3 +1,4 @@
+import model.QueuMessage;
 import model.Server;
 import threads.ServerThreadListen;
 
