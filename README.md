@@ -29,4 +29,9 @@ Lock:
 Collection:
   - BlockLinkedQueu
   - etc
+
+Run project
+  - Start /src/ServerMain.class
+  - Start one client /src/ClientMain.class
+  - Start test load 300-client /src/test.sh in background
      
