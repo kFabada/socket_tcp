@@ -96,7 +96,12 @@ public class ClientServerSide {
     }
 
     public void redirectMessage(String message) throws RuntimeException{
-        String messageFormat = "from: " + username + " message: " + message.replaceFirst(":", "");
+        String messageFormat =
+                "from: "
+                + username
+                + " message: "
+                + message
+                .replaceFirst(":", "");
 
         if (this.username.isEmpty()){
             throw new RuntimeException();
