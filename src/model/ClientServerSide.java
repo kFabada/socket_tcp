@@ -84,6 +84,7 @@ public class ClientServerSide {
             outputStream.flush();
         } catch (IOException e) {
             closeConnect();
+            Thread.interrupted();
         }
     }
 
@@ -128,6 +129,7 @@ public class ClientServerSide {
                 this.command(message);
             } catch (IOException e) {
                 closeConnect();
+                Thread.interrupted();
                 break;
             }
         }
