@@ -34,4 +34,8 @@ Run project
   - Start /src/ServerMain.class
   - Start one client /src/ClientMain.class
   - Start test load 300-client /src/test.sh in background
+
+ Memory usage
+   - Client = 25mb(1 Client no message) - 40mb(1 Client with message) 
+   - Server = 27mb(0 Client) - 100mb(300 Client no message redirect) > *mb(x -> Client + message)
      
