@@ -1,5 +1,8 @@
 package model;
 
+import threads.ClientThreadGetMessage;
+import threads.ClientThreadStateMessage;
+
 import java.io.*;
 import java.net.Socket;
 import java.nio.ByteBuffer;
@@ -18,11 +21,15 @@ public class Client {
     private DataInputStream inputStream;
     private DataOutputStream outputStream;
     private Scanner scanner;
+    private ClientManagerMessageState messageState;
 
     public Client(String host, int port) {
         this.host = host;
         this.port = port;
         this.scanner = new Scanner(System.in);
+        this.messageState = new ClientManagerMessageState();
+
+        new Thread(new ClientThreadStateMessage(messageState)).start();
     }
 
     public void connectServer() {
@@ -35,11 +42,15 @@ public class Client {
     }
 
     public void sendMessage() {
+
+
         while (true){
             try {
                 outputStream = new DataOutputStream(socket.getOutputStream());
 
-                String message = scanner.nextLine();
+                ClientThreadGetMessage c = new ClientThreadGetMessage(messageState);
+                new Thread(c).start();
+                String message = c.getMessage();
 
                 if(!message.isBlank()){
                     outputStream.writeUTF(message);
@@ -61,7 +72,7 @@ public class Client {
             if(outputStream != null)  outputStream.close();
             if (socket != null) socket.close();
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            Thread.interrupted();
         }
 
     }
@@ -73,7 +84,7 @@ public class Client {
                 String i = inputStream.readUTF();
                 System.out.println(i);
             } catch (IOException e) {
-                throw new RuntimeException(e);
+               Thread.interrupted();
             }
         }
 
