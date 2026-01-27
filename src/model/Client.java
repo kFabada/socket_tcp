@@ -5,14 +5,9 @@ import threads.ClientThreadStateMessage;
 
 import java.io.*;
 import java.net.Socket;
-import java.nio.ByteBuffer;
-import java.nio.ByteOrder;
-import java.nio.charset.Charset;
-import java.nio.charset.CharsetDecoder;
-import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Scanner;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 public class Client {
     private String host;
@@ -20,16 +15,15 @@ public class Client {
     private Socket socket;
     private DataInputStream inputStream;
     private DataOutputStream outputStream;
-    private Scanner scanner;
+    private ExecutorService pool;
     private ClientManagerMessageState messageState;
 
     public Client(String host, int port) {
         this.host = host;
         this.port = port;
-        this.scanner = new Scanner(System.in);
         this.messageState = new ClientManagerMessageState();
-
-        new Thread(new ClientThreadStateMessage(messageState)).start();
+        this.pool = Executors.newFixedThreadPool(3);
+        this.pool.execute(new ClientThreadStateMessage(messageState));
     }
 
     public void connectServer() {
@@ -42,15 +36,13 @@ public class Client {
     }
 
     public void sendMessage() {
-
-
         while (true){
             try {
                 outputStream = new DataOutputStream(socket.getOutputStream());
 
-                ClientThreadGetMessage c = new ClientThreadGetMessage(messageState);
-                new Thread(c).start();
-                String message = c.getMessage();
+                ClientThreadGetMessage state = new ClientThreadGetMessage(messageState);
+                pool.execute(state);
+                String message = state.getMessage();
 
                 if(!message.isBlank()){
                     outputStream.writeUTF(message);
@@ -74,7 +66,6 @@ public class Client {
         } catch (IOException e) {
             Thread.interrupted();
         }
-
     }
 
     public void receiveMessage() {
@@ -85,6 +76,7 @@ public class Client {
                 System.out.println(i);
             } catch (IOException e) {
                Thread.interrupted();
+               break;
             }
         }
 
